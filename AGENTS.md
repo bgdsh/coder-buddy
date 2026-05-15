@@ -22,6 +22,7 @@ make upload PORT=/dev/cu.usbmodem101
 make status
 make check-ui-setup
 make check-ui
+make check-mcp
 ```
 
 Notes:
@@ -31,6 +32,7 @@ Notes:
 - `make status` calls the deployed API at `BUDDY_IP`, defaulting to `192.168.31.219`.
 - `make check-ui-setup` installs npm dependencies and the Playwright Chromium browser used by UI checks.
 - `make check-ui` runs the Playwright UI smoke tests against `BUDDY_IP`, defaulting to `192.168.31.219`.
+- `make check-mcp` starts the local MCP server over stdio and verifies tool listing plus `coder_buddy_status` against `BUDDY_IP`.
 - `make verify` enters raw REPL and can interrupt the running app. Run `make reset PORT=/dev/cu.usbmodem101` afterward before testing the HTTP API.
 - Serial upload uses `scripts/mpy_tool.py` because `mpremote fs cp` was unreliable when launched through `make` in this environment.
 
@@ -49,6 +51,14 @@ Notes:
 - The UI tests check both `/` and `/index.html`, verify AJAX hydration from `/status`, and exercise `Trigger +1` followed by `Reset`.
 - Tests call `/reset` in cleanup so the physical device should end at level 0 / idle.
 - `node_modules/`, `test-results/`, and `playwright-report/` are local outputs and should not be committed.
+
+## MCP Server
+
+- MCP server entrypoint: `scripts/coder_buddy_mcp.mjs`.
+- Run it with `npm run mcp` or `make mcp`; both honor `BUDDY_IP`, defaulting to `192.168.31.219`.
+- The server exposes `coder_buddy_trigger`, `coder_buddy_stop`, `coder_buddy_reset`, `coder_buddy_status`, and `coder_buddy_set_track`.
+- `scripts/check_mcp.mjs` is a stdio protocol smoke test used by `make check-mcp`.
+- Keep `SKILL.md` assistant-facing: prefer MCP first, then REST/curl fallback.
 
 ## Configuration
 

@@ -17,7 +17,15 @@ Do not guess or rediscover the IP unless the user explicitly says the device has
 
 ## Preferred MCP Calls
 
-When an MCP server exposes Coder Buddy tools, use these tool calls before falling back to shell/curl commands:
+Start the local MCP server with:
+
+```bash
+BUDDY_IP=192.168.31.219 npm run mcp
+```
+
+For repository maintenance, `make check-mcp` verifies that the MCP server starts, lists the tools, and can call `coder_buddy_status`.
+
+When the MCP server exposes Coder Buddy tools, use these tool calls before falling back to shell/curl commands:
 
 - `coder_buddy_trigger`
   - Use when an approval or attention event starts.

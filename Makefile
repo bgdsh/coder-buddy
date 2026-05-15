@@ -6,7 +6,7 @@ ESPTOOL ?= python3 -m esptool
 FIRMWARE ?= firmware/ESP32_GENERIC_S3-SPIRAM_OCT-20260406-v1.28.0.bin
 BUDDY_IP ?= 192.168.31.219
 
-.PHONY: list-ports identify erase flash verify wavs upload upload-code upload-audio mkdirs reset status check-ui-setup check-ui skill
+.PHONY: list-ports identify erase flash verify wavs upload upload-code upload-audio mkdirs reset status check-ui-setup check-ui mcp check-mcp skill
 
 list-ports:
 	python3 -m serial.tools.list_ports -v
@@ -49,6 +49,12 @@ check-ui-setup:
 
 check-ui:
 	BUDDY_IP=$(BUDDY_IP) npm run check-ui
+
+mcp:
+	BUDDY_IP=$(BUDDY_IP) npm run mcp
+
+check-mcp:
+	BUDDY_IP=$(BUDDY_IP) npm run check-mcp
 
 skill:
 	$(MPY_TOOL) --port $(PORT) exec "import network; print(network.WLAN(network.STA_IF).ifconfig()[0])"

@@ -1,7 +1,12 @@
 {
   "private": true,
   "scripts": {
-    "check-ui": "playwright test scripts/check_ui.spec.js"
+    "check-ui": "playwright test scripts/check_ui.spec.js",
+    "mcp": "node scripts/coder_buddy_mcp.mjs",
+    "check-mcp": "node scripts/check_mcp.mjs"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.23.0"
   },
   "devDependencies": {
     "@playwright/test": "^1.60.0"
