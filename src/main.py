@@ -13,6 +13,7 @@ import secrets
 
 
 STATE_PATH = "/state.json"
+UI_PATH = "/index.html"
 
 
 class DeviceState:
@@ -266,50 +267,8 @@ def status_payload():
 
 
 def render_ui():
-    tracks = list_tracks()
-    options = "".join(
-        '<option value="%s"%s>%s</option>' % (t, " selected" if t == state.track else "", t)
-        for t in tracks
-    )
-    return """<!doctype html>
-<html>
-<head>
-<meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Coder Buddy</title>
-<style>
-body{font-family:-apple-system,BlinkMacSystemFont,Segoe UI,sans-serif;margin:24px;background:#f7f7f4;color:#1f2328}
-main{max-width:520px;margin:auto}
-section{margin:18px 0;padding:16px;border:1px solid #d7d7d2;border-radius:8px;background:white}
-button,select{font-size:16px;padding:10px 12px;border-radius:6px;border:1px solid #b8b8b0;background:white}
-button{background:#1f6feb;color:white;border-color:#1f6feb}
-.stop{background:#b42318;border-color:#b42318}
-.row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
-.level{font-size:48px;font-weight:700}
-</style>
-</head>
-<body>
-<main>
-<h1>Coder Buddy</h1>
-<section>
-<div>IP: <strong>%s</strong></div>
-<div>Track: <strong>%s</strong></div>
-<div>Running: <strong>%s</strong></div>
-<div class="level">%d / %d</div>
-</section>
-<section>
-<form method="post" action="/config/track" class="row">
-<select name="track">%s</select>
-<button type="submit">Save</button>
-</form>
-</section>
-<section class="row">
-<form method="post" action="/trigger"><button type="submit">Trigger +1</button></form>
-<form method="post" action="/stop"><button class="stop" type="submit">Stop -1</button></form>
-<form method="post" action="/reset"><button class="stop" type="submit">Reset</button></form>
-</section>
-</main>
-</body>
-</html>""" % (state.ip, state.track, state.running, state.level, config.MAX_LEVEL, options)
+    with open(UI_PATH) as f:
+        return f.read()
 
 
 async def read_request(reader):
@@ -342,7 +301,7 @@ async def handle_client(reader, writer):
         if method is None:
             return
         clean_path = path.split("?", 1)[0]
-        if method == "GET" and clean_path == "/":
+        if method == "GET" and clean_path in ("/", "/index.html"):
             await http_response(writer, render_ui(), content_type="text/html")
         elif method == "GET" and clean_path == "/status":
             await json_response(writer, status_payload())
@@ -368,7 +327,7 @@ async def handle_client(reader, writer):
             if track in list_tracks():
                 state.track = track
                 state.save()
-            await http_response(writer, render_ui(), content_type="text/html")
+            await json_response(writer, status_payload())
         else:
             await json_response(writer, {"error": "not found"}, "404 Not Found")
     except Exception as exc:

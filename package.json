@@ -1,0 +1,9 @@
+{
+  "private": true,
+  "scripts": {
+    "check-ui": "playwright test scripts/check_ui.spec.js"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.60.0"
+  }
+}

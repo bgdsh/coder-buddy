@@ -20,14 +20,35 @@ make flash PORT=/dev/cu.usbmodem101
 make verify PORT=/dev/cu.usbmodem101
 make upload PORT=/dev/cu.usbmodem101
 make status
+make check-ui-setup
+make check-ui
 ```
 
 Notes:
 - `make flash` erases the board and flashes MicroPython.
-- `make upload` uploads `src/*.py` and generated WAV files.
+- `make upload-code` uploads `src/config.py`, local-only `src/secrets.py`, `src/main.py`, and `src/index.html`.
+- `make upload` uploads code, the standalone Web UI, and generated WAV files.
 - `make status` calls the deployed API at `BUDDY_IP`, defaulting to `192.168.31.219`.
+- `make check-ui-setup` installs npm dependencies and the Playwright Chromium browser used by UI checks.
+- `make check-ui` runs the Playwright UI smoke tests against `BUDDY_IP`, defaulting to `192.168.31.219`.
 - `make verify` enters raw REPL and can interrupt the running app. Run `make reset PORT=/dev/cu.usbmodem101` afterward before testing the HTTP API.
 - Serial upload uses `scripts/mpy_tool.py` because `mpremote fs cp` was unreliable when launched through `make` in this environment.
+
+## Web UI
+
+- The device serves the Web UI from `/index.html`, uploaded from `src/index.html`.
+- `src/main.py` should keep UI serving thin: `render_ui()` reads `UI_PATH = "/index.html"`, and both `/` and `/index.html` return the same HTML.
+- The UI is self-contained HTML/CSS/JavaScript with no CDN or runtime build dependency on the device.
+- Browser interactions use AJAX calls to the firmware API. Keep control endpoints JSON-friendly so the UI can update without full page reloads.
+- `POST /config/track` returns the same status payload shape as `/trigger`, `/stop`, and `/reset`.
+
+## UI Testing
+
+- Playwright tests live in `scripts/check_ui.spec.js`.
+- Run `make check-ui-setup` once on a fresh machine, then `make check-ui` for verification.
+- The UI tests check both `/` and `/index.html`, verify AJAX hydration from `/status`, and exercise `Trigger +1` followed by `Reset`.
+- Tests call `/reset` in cleanup so the physical device should end at level 0 / idle.
+- `node_modules/`, `test-results/`, and `playwright-report/` are local outputs and should not be committed.
 
 ## Configuration
 
@@ -74,3 +95,4 @@ The physical button is the emergency clear action. It resets level to 0 and stop
 - `src/secrets.py` contains local Wi-Fi credentials for deployment and is ignored by git. Keep `src/secrets.example.py` as the committed template.
 - The firmware binary is intentionally ignored by git via `.gitignore`; download or regenerate it when needed.
 - Generated `__pycache__` directories are ignored and should not be committed.
+- Keep Copilot-facing repository instructions in `.github/copilot-instructions.md` short and point back to this file for detailed maintenance notes.

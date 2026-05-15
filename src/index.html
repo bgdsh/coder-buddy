@@ -1,0 +1,95 @@
+<!doctype html>
+<html>
+<head>
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Coder Buddy</title>
+<style>
+*{box-sizing:border-box}
+body{margin:0;min-height:100vh;font-family:-apple-system,BlinkMacSystemFont,Segoe UI,sans-serif;background:#eef1f4;color:#172033}
+main{width:min(920px,100%);margin:0 auto;padding:28px 18px 40px}
+.top{display:flex;justify-content:space-between;gap:16px;align-items:flex-start;margin-bottom:18px}
+h1{margin:0;font-size:30px;line-height:1.1;font-weight:760;letter-spacing:0}
+.sub{margin-top:8px;color:#5a6472;font-size:14px}
+.status{display:inline-flex;align-items:center;gap:8px;border:1px solid #cad1dc;background:#fff;padding:8px 10px;border-radius:999px;font-size:13px;font-weight:650;color:#445063}
+.dot{width:9px;height:9px;border-radius:50%;background:#8b95a5}.dot.on{background:#17a05d}
+.grid{display:grid;grid-template-columns:1.15fr .85fr;gap:14px}
+section{border:1px solid #d6dce5;background:#fff;border-radius:8px;padding:16px;box-shadow:0 10px 28px rgba(25,34,48,.08)}
+.hero{min-height:260px;display:grid;align-content:space-between;background:#fff}
+.meter{height:12px;border-radius:999px;background:#dfe5ec;overflow:hidden;margin:18px 0 12px}
+.fill{height:100%;width:0;background:#2563eb;transition:width .2s ease,background .2s ease}
+.level{font-size:76px;line-height:.95;font-weight:780;letter-spacing:0;color:#101828}
+.level small{font-size:22px;color:#6b7480;font-weight:680}
+.meta{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:16px}
+.item{border:1px solid #e1e6ee;border-radius:8px;padding:11px;background:#fafbfc;min-width:0}
+.label{font-size:12px;color:#667085;margin-bottom:5px}.value{font-size:15px;font-weight:680;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.controls{display:grid;gap:10px}.row{display:grid;grid-template-columns:1fr 1fr;gap:10px}.wide{grid-column:1/-1}
+button,select{width:100%;min-height:46px;border-radius:8px;border:1px solid #c8d0dc;background:#fff;color:#182230;font-size:16px;font-weight:680;padding:10px 12px}
+button{cursor:pointer;transition:transform .08s ease,filter .15s ease}button:active{transform:scale(.99)}button:disabled,select:disabled{opacity:.6;cursor:wait}
+.primary{background:#2563eb;border-color:#2563eb;color:white}.danger{background:#c2412d;border-color:#c2412d;color:white}.quiet{background:#f8fafc}
+.save{background:#16754d;border-color:#16754d;color:white}.toast{min-height:22px;color:#5e6876;font-size:13px;margin-top:10px}
+@media(max-width:720px){main{padding-top:20px}.top{display:block}.status{margin-top:14px}.grid{grid-template-columns:1fr}.level{font-size:64px}.meta{grid-template-columns:1fr}.row{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<main>
+<div class="top">
+<div><h1>Coder Buddy</h1><div class="sub" id="device">Loading device</div></div>
+<div class="status"><span class="dot" id="dot"></span><span id="running">Offline</span></div>
+</div>
+<div class="grid">
+<section class="hero">
+<div>
+<div class="label">Alert level</div>
+<div class="level"><span id="level">0</span> <small>/ <span id="max">10</span></small></div>
+<div class="meter"><div class="fill" id="fill"></div></div>
+</div>
+<div class="meta">
+<div class="item"><div class="label">IP</div><div class="value" id="ip">0.0.0.0</div></div>
+<div class="item"><div class="label">Track</div><div class="value" id="trackName">-</div></div>
+<div class="item"><div class="label">State</div><div class="value" id="stateText">Idle</div></div>
+</div>
+</section>
+<section class="controls">
+<button class="primary wide" id="trigger" type="button">Trigger +1</button>
+<div class="row">
+<button class="quiet" id="stop" type="button">Stop -1</button>
+<button class="danger" id="reset" type="button">Reset</button>
+</div>
+<select id="track"></select>
+<button class="save" id="save" type="button">Save Track</button>
+<div class="toast" id="toast"></div>
+</section>
+</div>
+</main>
+<script>
+const el=(id)=>document.getElementById(id);
+const buttons=["trigger","stop","reset","save"].map(el);
+let currentTrack="";
+function busy(on){buttons.forEach((button)=>button.disabled=on);el("track").disabled=on;}
+function note(text){el("toast").textContent=text;}
+async function api(path,options){const res=await fetch(path,options||{});if(!res.ok)throw new Error(res.status);return await res.json();}
+function paint(data){
+  const max=data.max_level||10;
+  const level=data.level||0;
+  const percent=Math.round(level*100/max);
+  currentTrack=data.track||"";
+  el("device").textContent=(data.device||"coder-buddy")+" / "+(data.ip||"0.0.0.0");
+  el("level").textContent=level;el("max").textContent=max;el("ip").textContent=data.ip||"0.0.0.0";
+  el("trackName").textContent=currentTrack||"-";el("stateText").textContent=data.running?"Running":"Idle";
+  el("running").textContent=data.running?"Running":"Idle";el("dot").classList.toggle("on",!!data.running);
+  el("fill").style.width=percent+"%";el("fill").style.background=level>=8?"#c2412d":level>=4?"#d97706":"#2563eb";
+  const select=el("track");
+  const tracks=data.tracks||[];
+  if(select.options.length!==tracks.length||Array.from(select.options).some((option,i)=>option.value!==tracks[i])){
+    select.innerHTML="";tracks.forEach((track)=>{const option=document.createElement("option");option.value=track;option.textContent=track;select.appendChild(option);});
+  }
+  select.value=currentTrack;
+}
+async function refresh(){try{paint(await api("/status"));note("");}catch(err){note("Connection lost");}}
+async function post(path){busy(true);try{paint(await api(path,{method:"POST"}));note("Updated");}catch(err){note("Request failed");}finally{busy(false);}}
+async function saveTrack(){busy(true);try{const body="track="+encodeURIComponent(el("track").value);paint(await api("/config/track",{method:"POST",headers:{"Content-Type":"application/x-www-form-urlencoded"},body:body}));note("Track saved");}catch(err){note("Save failed");}finally{busy(false);}}
+el("trigger").onclick=()=>post("/trigger");el("stop").onclick=()=>post("/stop");el("reset").onclick=()=>post("/reset");el("save").onclick=saveTrack;
+refresh();setInterval(refresh,3000);
+</script>
+</body>
+</html>

@@ -6,7 +6,7 @@ ESPTOOL ?= python3 -m esptool
 FIRMWARE ?= firmware/ESP32_GENERIC_S3-SPIRAM_OCT-20260406-v1.28.0.bin
 BUDDY_IP ?= 192.168.31.219
 
-.PHONY: list-ports identify erase flash verify wavs upload upload-code upload-audio mkdirs reset status skill
+.PHONY: list-ports identify erase flash verify wavs upload upload-code upload-audio mkdirs reset status check-ui-setup check-ui skill
 
 list-ports:
 	python3 -m serial.tools.list_ports -v
@@ -30,7 +30,7 @@ mkdirs:
 	$(MPY_TOOL) --port $(PORT) exec "import os\ntry:\n    os.mkdir('audio')\nexcept OSError:\n    pass\n"
 
 upload-code:
-	$(MPY_TOOL) --port $(PORT) upload src/config.py:config.py src/secrets.py:secrets.py src/main.py:main.py
+	$(MPY_TOOL) --port $(PORT) upload src/config.py:config.py src/secrets.py:secrets.py src/main.py:main.py src/index.html:index.html
 
 upload-audio: wavs
 	$(MPY_TOOL) --port $(PORT) upload audio/approve_soft.wav:audio/approve_soft.wav audio/approve_ping.wav:audio/approve_ping.wav audio/approve_alert.wav:audio/approve_alert.wav
@@ -42,6 +42,13 @@ reset:
 
 status:
 	@for n in 1 2 3 4 5; do curl -s --max-time 2 http://$(BUDDY_IP)/status && exit 0; sleep 1; done; exit 1
+
+check-ui-setup:
+	npm install
+	npx playwright install chromium
+
+check-ui:
+	BUDDY_IP=$(BUDDY_IP) npm run check-ui
 
 skill:
 	$(MPY_TOOL) --port $(PORT) exec "import network; print(network.WLAN(network.STA_IF).ifconfig()[0])"

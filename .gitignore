@@ -1,3 +1,6 @@
 firmware/*.bin
 __pycache__/
+node_modules/
+playwright-report/
+test-results/
 src/secrets.py
