@@ -6,7 +6,7 @@ const buddyIp = process.env.BUDDY_IP || '192.168.31.219';
 
 const transport = new StdioClientTransport({
   command: process.execPath,
-  args: ['scripts/coder_buddy_mcp.mjs'],
+  args: ['coder_buddy_mcp.mjs'],
   env: { ...process.env, BUDDY_IP: buddyIp },
 });
 

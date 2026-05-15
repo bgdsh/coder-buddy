@@ -1,11 +1,11 @@
 ---
 name: coder-buddy-esp32
-description: Call the local Coder Buddy MCP tools or REST API from assistant hooks when approval or attention events happen.
+description: Control the local Coder Buddy ESP32 attention device from assistant hooks or agent workflows. Use when approval, permission, review, waiting-for-user, or attention events should trigger, stop, reset, diagnose, or configure the physical device via MCP tools first and HTTP fallback second.
 ---
 
 # Coder Buddy API
 
-Prefer the MCP tools when they are available. Use the HTTP REST calls only as a fallback when no Coder Buddy MCP server/tooling is available in the current assistant runtime.
+Prefer MCP tools. Use HTTP only when MCP tooling is unavailable.
 
 Use this exact base URL:
 
@@ -15,17 +15,19 @@ http://192.168.31.219
 
 Do not guess or rediscover the IP unless the user explicitly says the device has been redeployed or the IP changed.
 
-## Preferred MCP Calls
+## MCP Server
 
-Start the local MCP server with:
+Start the bundled stdio MCP server from this skill folder:
 
 ```bash
-BUDDY_IP=192.168.31.219 npm run mcp
+BUDDY_IP=192.168.31.219 node coder_buddy_mcp.mjs
 ```
 
-For repository maintenance, `make check-mcp` verifies that the MCP server starts, lists the tools, and can call `coder_buddy_status`.
+`coder_buddy_mcp.mjs` is stored next to this `SKILL.md` file and has no npm package dependencies. A runtime with only this skill folder can start it directly.
 
-When the MCP server exposes Coder Buddy tools, use these tool calls before falling back to shell/curl commands:
+## MCP Tools
+
+Use these tools before shell/curl commands:
 
 - `coder_buddy_trigger`
   - Use when an approval or attention event starts.
@@ -48,7 +50,7 @@ When the MCP server exposes Coder Buddy tools, use these tool calls before falli
   - Input: `{ "track": "approve_soft.wav" }`
   - Expected result shape: the same status payload as `GET /status`.
 
-MCP behavior should mirror the REST API:
+Tool behavior mirrors the REST API:
 
 - `coder_buddy_trigger` maps to `POST /trigger` and increments level by 1, up to 10.
 - `coder_buddy_stop` maps to `POST /stop` and decrements level by 1. When the level reaches 0, the device stops its current alert state.
@@ -56,7 +58,7 @@ MCP behavior should mirror the REST API:
 - `coder_buddy_status` maps to `GET /status`.
 - `coder_buddy_set_track` maps to `POST /config/track`.
 
-If a Coder Buddy MCP call fails because the MCP server is unavailable, use the HTTP fallback commands below.
+If an MCP call fails because the MCP server is unavailable, use the HTTP fallback commands below.
 
 ## HTTP Fallback Calls
 

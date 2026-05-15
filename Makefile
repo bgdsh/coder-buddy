@@ -5,8 +5,10 @@ MPY_TOOL ?= python3 scripts/mpy_tool.py
 ESPTOOL ?= python3 -m esptool
 FIRMWARE ?= firmware/ESP32_GENERIC_S3-SPIRAM_OCT-20260406-v1.28.0.bin
 BUDDY_IP ?= 192.168.31.219
+AGENTS_SKILL_INSTALL_DIR ?= $(HOME)/.agents/skills/coder-buddy-esp32
+CLAUDE_SKILL_INSTALL_DIR ?= $(HOME)/.claude/skills/coder-buddy-esp32
 
-.PHONY: list-ports identify erase flash verify wavs upload upload-code upload-audio mkdirs reset status check-ui-setup check-ui mcp check-mcp skill
+.PHONY: list-ports identify erase flash verify wavs upload upload-code upload-audio mkdirs reset status check-ui-setup check-ui mcp check-mcp sync-skill check-skill-sync skill
 
 list-ports:
 	python3 -m serial.tools.list_ports -v
@@ -55,6 +57,18 @@ mcp:
 
 check-mcp:
 	BUDDY_IP=$(BUDDY_IP) npm run check-mcp
+
+sync-skill:
+	install -d $(AGENTS_SKILL_INSTALL_DIR) $(CLAUDE_SKILL_INSTALL_DIR)
+	cp SKILL.md coder_buddy_mcp.mjs $(AGENTS_SKILL_INSTALL_DIR)/
+	cp SKILL.md coder_buddy_mcp.mjs $(CLAUDE_SKILL_INSTALL_DIR)/
+	chmod +x $(AGENTS_SKILL_INSTALL_DIR)/coder_buddy_mcp.mjs $(CLAUDE_SKILL_INSTALL_DIR)/coder_buddy_mcp.mjs
+
+check-skill-sync:
+	cmp -s SKILL.md $(AGENTS_SKILL_INSTALL_DIR)/SKILL.md
+	cmp -s coder_buddy_mcp.mjs $(AGENTS_SKILL_INSTALL_DIR)/coder_buddy_mcp.mjs
+	cmp -s SKILL.md $(CLAUDE_SKILL_INSTALL_DIR)/SKILL.md
+	cmp -s coder_buddy_mcp.mjs $(CLAUDE_SKILL_INSTALL_DIR)/coder_buddy_mcp.mjs
 
 skill:
 	$(MPY_TOOL) --port $(PORT) exec "import network; print(network.WLAN(network.STA_IF).ifconfig()[0])"

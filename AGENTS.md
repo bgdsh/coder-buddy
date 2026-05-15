@@ -54,11 +54,13 @@ Notes:
 
 ## MCP Server
 
-- MCP server entrypoint: `scripts/coder_buddy_mcp.mjs`.
+- MCP server entrypoint: `coder_buddy_mcp.mjs`, stored beside `SKILL.md` so the skill folder is self-contained.
+- `coder_buddy_mcp.mjs` is dependency-free and can be started with `BUDDY_IP=192.168.31.219 node coder_buddy_mcp.mjs`.
 - Run it with `npm run mcp` or `make mcp`; both honor `BUDDY_IP`, defaulting to `192.168.31.219`.
 - The server exposes `coder_buddy_trigger`, `coder_buddy_stop`, `coder_buddy_reset`, `coder_buddy_status`, and `coder_buddy_set_track`.
 - `scripts/check_mcp.mjs` is a stdio protocol smoke test used by `make check-mcp`.
 - Keep `SKILL.md` assistant-facing: prefer MCP first, then REST/curl fallback.
+- The repository copies `SKILL.md` and `coder_buddy_mcp.mjs` are the source of truth. Installed skills at `~/.agents/skills/coder-buddy-esp32/` and `~/.claude/skills/coder-buddy-esp32/` must be produced by `make sync-skill`, and `make check-skill-sync` verifies both installed copies match.
 
 ## Configuration
 
