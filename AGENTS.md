@@ -66,6 +66,8 @@ Hardware mapping is in `src/config.py`:
 - Amp enable / SD: GPIO 15, active-high by default
 - Servo angle range: 80 to 100 degrees
 
+See `docs/wiring.md` for the wiring diagram and GPIO table.
+
 Servo behavior:
 - On boot and at API level 0, the firmware writes `SERVO_NEUTRAL_ANGLE` so the servo should stop.
 - While active, the servo alternates between `SERVO_MIN_ANGLE` and `SERVO_MAX_ANGLE`.

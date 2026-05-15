@@ -1,8 +1,9 @@
 <!doctype html>
-<html>
+<html lang="zh-CN">
 <head>
+<meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Coder Buddy</title>
+<title>代码伙伴</title>
 <style>
 *{box-sizing:border-box}
 body{margin:0;min-height:100vh;font-family:-apple-system,BlinkMacSystemFont,Segoe UI,sans-serif;background:#eef1f4;color:#172033}
@@ -33,30 +34,30 @@ button{cursor:pointer;transition:transform .08s ease,filter .15s ease}button:act
 <body>
 <main>
 <div class="top">
-<div><h1>Coder Buddy</h1><div class="sub" id="device">Loading device</div></div>
-<div class="status"><span class="dot" id="dot"></span><span id="running">Offline</span></div>
+<div><h1>代码伙伴</h1><div class="sub" id="device">正在加载设备</div></div>
+<div class="status"><span class="dot" id="dot"></span><span id="running">离线</span></div>
 </div>
 <div class="grid">
 <section class="hero">
 <div>
-<div class="label">Alert level</div>
+<div class="label">提醒等级</div>
 <div class="level"><span id="level">0</span> <small>/ <span id="max">10</span></small></div>
 <div class="meter"><div class="fill" id="fill"></div></div>
 </div>
 <div class="meta">
-<div class="item"><div class="label">IP</div><div class="value" id="ip">0.0.0.0</div></div>
-<div class="item"><div class="label">Track</div><div class="value" id="trackName">-</div></div>
-<div class="item"><div class="label">State</div><div class="value" id="stateText">Idle</div></div>
+<div class="item"><div class="label">IP 地址</div><div class="value" id="ip">0.0.0.0</div></div>
+<div class="item"><div class="label">音轨</div><div class="value" id="trackName">-</div></div>
+<div class="item"><div class="label">状态</div><div class="value" id="stateText">空闲</div></div>
 </div>
 </section>
 <section class="controls">
-<button class="primary wide" id="trigger" type="button">Trigger +1</button>
+<button class="primary wide" id="trigger" type="button">触发 +1</button>
 <div class="row">
-<button class="quiet" id="stop" type="button">Stop -1</button>
-<button class="danger" id="reset" type="button">Reset</button>
+<button class="quiet" id="stop" type="button">停止 -1</button>
+<button class="danger" id="reset" type="button">重置</button>
 </div>
 <select id="track"></select>
-<button class="save" id="save" type="button">Save Track</button>
+<button class="save" id="save" type="button">保存音轨</button>
 <div class="toast" id="toast"></div>
 </section>
 </div>
@@ -75,8 +76,8 @@ function paint(data){
   currentTrack=data.track||"";
   el("device").textContent=(data.device||"coder-buddy")+" / "+(data.ip||"0.0.0.0");
   el("level").textContent=level;el("max").textContent=max;el("ip").textContent=data.ip||"0.0.0.0";
-  el("trackName").textContent=currentTrack||"-";el("stateText").textContent=data.running?"Running":"Idle";
-  el("running").textContent=data.running?"Running":"Idle";el("dot").classList.toggle("on",!!data.running);
+  el("trackName").textContent=currentTrack||"-";el("stateText").textContent=data.running?"运行中":"空闲";
+  el("running").textContent=data.running?"运行中":"空闲";el("dot").classList.toggle("on",!!data.running);
   el("fill").style.width=percent+"%";el("fill").style.background=level>=8?"#c2412d":level>=4?"#d97706":"#2563eb";
   const select=el("track");
   const tracks=data.tracks||[];
@@ -85,9 +86,9 @@ function paint(data){
   }
   select.value=currentTrack;
 }
-async function refresh(){try{paint(await api("/status"));note("");}catch(err){note("Connection lost");}}
-async function post(path){busy(true);try{paint(await api(path,{method:"POST"}));note("Updated");}catch(err){note("Request failed");}finally{busy(false);}}
-async function saveTrack(){busy(true);try{const body="track="+encodeURIComponent(el("track").value);paint(await api("/config/track",{method:"POST",headers:{"Content-Type":"application/x-www-form-urlencoded"},body:body}));note("Track saved");}catch(err){note("Save failed");}finally{busy(false);}}
+async function refresh(){try{paint(await api("/status"));note("");}catch(err){note("连接已断开");}}
+async function post(path){busy(true);try{paint(await api(path,{method:"POST"}));note("已更新");}catch(err){note("请求失败");}finally{busy(false);}}
+async function saveTrack(){busy(true);try{const body="track="+encodeURIComponent(el("track").value);paint(await api("/config/track",{method:"POST",headers:{"Content-Type":"application/x-www-form-urlencoded"},body:body}));note("音轨已保存");}catch(err){note("保存失败");}finally{busy(false);}}
 el("trigger").onclick=()=>post("/trigger");el("stop").onclick=()=>post("/stop");el("reset").onclick=()=>post("/reset");el("save").onclick=saveTrack;
 refresh();setInterval(refresh,3000);
 </script>
